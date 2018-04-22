@@ -32,10 +32,7 @@ type BuildParams struct {
 
 // Build the Docker image with AWS Codebuild.
 // Inspired by: https://docs.aws.amazon.com/codebuild/latest/userguide/sample-docker.html
-func Build(w io.Writer, params *BuildParams) error {
-	// Set the params defaults.
-	params.Defaults()
-
+func Build(w io.Writer, params BuildParams) error {
 	fmt.Fprintln(w, "Validating configuration")
 
 	// Validate that the params.
@@ -125,7 +122,7 @@ func uploadFile(uploader *s3manager.Uploader, bucket, file string) error {
 }
 
 // Helper function to create/update a CodeBuild project.
-func createProject(client *codebuild.CodeBuild, params *BuildParams, pkg string) error {
+func createProject(client *codebuild.CodeBuild, params BuildParams, pkg string) error {
 	_, err := client.CreateProject(params.CreateProjectInput(pkg))
 	if err != nil {
 		if awserr, ok := err.(awserr.Error); ok {

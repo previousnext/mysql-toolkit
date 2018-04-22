@@ -10,12 +10,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-type RunParams struct {
+// DumpParams are passed to the Dump method.
+type DumpParams struct {
 	Connection Connection
 	Config     string
 	File       string
 }
 
+// Connection details for MySQL.
 type Connection struct {
 	Hostname string
 	Username string
@@ -26,7 +28,8 @@ type Connection struct {
 	MaxConn  int
 }
 
-func Dump(w io.Writer, params RunParams) error {
+// Dump the MySQL database.
+func Dump(w io.Writer, params DumpParams) error {
 	var logger = log.New(w, "", 0)
 
 	logger.Println("Connecting to Mysql database:", params.Connection.Database)

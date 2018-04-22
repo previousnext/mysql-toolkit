@@ -11,6 +11,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+// SyncParams for function Sync.
 type SyncParams struct {
 	Namespace string
 	Frequency string

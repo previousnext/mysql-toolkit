@@ -2,6 +2,7 @@ package codebuilder
 
 import "github.com/pkg/errors"
 
+// Validate the BuildParams.
 func (b *BuildParams) Validate() error {
 	if b.Project == "" {
 		return errors.New("not found: project")

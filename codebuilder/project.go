@@ -4,14 +4,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/codebuild"
 	"path/filepath"
+
+	cmdenv "github.com/previousnext/mysql-toolkit/cmd/env"
 )
 
-const (
-	EnvVarDockerUsername = "DOCKER_USERNAME"
-	EnvVarDockerPassword = "DOCKER_PASSWORD"
-	EnvVarDockerImage    = "DOCKER_IMAGE"
-)
-
+// CreateProjectInput used for CreateProject CodeBuild method.
 func (b *BuildParams) CreateProjectInput(source string) *codebuild.CreateProjectInput {
 	return &codebuild.CreateProjectInput{
 		Name: aws.String(b.Project),
@@ -28,15 +25,15 @@ func (b *BuildParams) CreateProjectInput(source string) *codebuild.CreateProject
 			Image:       aws.String(b.Image),
 			EnvironmentVariables: []*codebuild.EnvironmentVariable{
 				{
-					Name:  aws.String(EnvVarDockerUsername),
+					Name:  aws.String(cmdenv.DockerUsername),
 					Value: aws.String(b.Docker.Username),
 				},
 				{
-					Name:  aws.String(EnvVarDockerPassword),
+					Name:  aws.String(cmdenv.DockerPassword),
 					Value: aws.String(b.Docker.Password),
 				},
 				{
-					Name:  aws.String(EnvVarDockerImage),
+					Name:  aws.String(cmdenv.DockerImage),
 					Value: aws.String(b.Docker.Image),
 				},
 			},
@@ -45,6 +42,7 @@ func (b *BuildParams) CreateProjectInput(source string) *codebuild.CreateProject
 	}
 }
 
+// UpdateProjectInput used for UpdateProject CodeBuild method.
 func (b *BuildParams) UpdateProjectInput(source string) *codebuild.UpdateProjectInput {
 	return &codebuild.UpdateProjectInput{
 		Name: aws.String(b.Project),
@@ -61,15 +59,15 @@ func (b *BuildParams) UpdateProjectInput(source string) *codebuild.UpdateProject
 			Image:       aws.String(b.Image),
 			EnvironmentVariables: []*codebuild.EnvironmentVariable{
 				{
-					Name:  aws.String(EnvVarDockerUsername),
+					Name:  aws.String(cmdenv.DockerUsername),
 					Value: aws.String(b.Docker.Username),
 				},
 				{
-					Name:  aws.String(EnvVarDockerPassword),
+					Name:  aws.String(cmdenv.DockerPassword),
 					Value: aws.String(b.Docker.Password),
 				},
 				{
-					Name:  aws.String(EnvVarDockerImage),
+					Name:  aws.String(cmdenv.DockerImage),
 					Value: aws.String(b.Docker.Image),
 				},
 			},

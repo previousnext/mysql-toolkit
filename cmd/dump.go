@@ -3,7 +3,6 @@ package cmd
 import (
 	"os"
 
-	_ "github.com/go-sql-driver/mysql"
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	cmdenv "github.com/previousnext/mysql-toolkit/cmd/env"
@@ -11,7 +10,7 @@ import (
 )
 
 type cmdDump struct {
-	params dumper.RunParams
+	params dumper.DumpParams
 }
 
 func (cmd *cmdDump) run(c *kingpin.ParseContext) error {
