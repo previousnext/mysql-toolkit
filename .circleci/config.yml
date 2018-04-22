@@ -4,7 +4,7 @@ jobs:
   lint_test:
     docker:
       - image: previousnext/golang:1.9
-    working_directory: /go/src/github.com/previousnext/mysql-toolbox
+    working_directory: /go/src/github.com/previousnext/mysql-toolkit
     environment:
       TEST_RESULTS: /tmp/test-results
     steps:
@@ -26,7 +26,7 @@ jobs:
   release_docker:
     docker:
       - image: previousnext/pnx-packager
-    working_directory: /go/src/github.com/previousnext/mysql-toolbox
+    working_directory: /go/src/github.com/previousnext/mysql-toolkit
     steps:
       - checkout
       - setup_remote_docker:
@@ -39,7 +39,7 @@ jobs:
   release_github:
     docker:
       - image: previousnext/golang:1.9
-    working_directory: /go/src/github.com/previousnext/mysql-toolbox
+    working_directory: /go/src/github.com/previousnext/mysql-toolkit
     steps:
       - checkout
       - run:
