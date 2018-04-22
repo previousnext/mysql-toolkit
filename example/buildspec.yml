@@ -1,0 +1,12 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - docker login --username="${DOCKER_USERNAME}" --password="${DOCKER_PASSWORD}"
+  build:
+    commands:
+      - docker build -t ${DOCKER_IMAGE} .
+  post_build:
+    commands:
+      - docker push ${DOCKER_IMAGE}

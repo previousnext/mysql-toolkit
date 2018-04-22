@@ -1,0 +1,8 @@
+sanitize:
+  tables:
+    - name: users_field_data
+      fields:
+        - name: mail
+          value: "SANITIZED_MAIL"
+        - name: pass
+          value: "SANITIZED_PASSWORD"

@@ -1,0 +1,29 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: mysql-toolkit-codebuild
+  namespace: kube-system
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sync
+            image: previousnext/mysql-toolkit:latest
+            env:
+              - name:  AWS_IAM_ROLE
+                value: ""
+              - name:  AWS_S3_BUCKET
+                value: ""
+              - name:  AWS_ACCESS_KEY_ID
+                value: ""
+              - name:  AWS_SECRET_ACCESS_KEY
+                value: ""
+              - name:  DOCKER_USERNAME
+                value: ""
+              - name:  DOCKER_PASSWORD
+                value: ""
+          restartPolicy: OnFailure
