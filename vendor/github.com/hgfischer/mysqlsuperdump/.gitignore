@@ -1,0 +1,9 @@
+mysqlsuperdump
+mysqlsuperdump.cfg
+test.*
+tags
+*.sql
+*.swp
+*.out
+*.html
+*.json
