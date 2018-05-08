@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/previousnext/mysql-toolkit/cmd"
 	"gopkg.in/alecthomas/kingpin.v2"
 )

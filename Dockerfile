@@ -8,8 +8,8 @@ FROM alpine:latest
 RUN apk --no-cache add ca-certificates
 COPY --from=builder /go/src/github.com/previousnext/mysql-toolkit/bin/mysql-toolkit_linux_amd64 /usr/local/bin/mysql-toolkit
 
-ENV SOURCE_DOCKERFILE=/root/Dockerfile
-ENV SOURCE_BUILDSPEC=/root/buildspec.yml
+ENV AWS_CODEBUILD_DOCKERFILE=/root/Dockerfile
+ENV AWS_CODEBUILD_SPEC=/root/buildspec.yml
 ENV MYSQL_CONFIG=/root/config.yml
 
 ADD example/Dockerfile /root/Dockerfile
