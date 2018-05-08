@@ -13,7 +13,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/previousnext/mysql-toolkit/awsutils"
+	"github.com/previousnext/mysql-toolkit/internal/awsutils"
 )
 
 // BuildParams for the codebuilder.

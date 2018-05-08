@@ -6,7 +6,7 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	cmdenv "github.com/previousnext/mysql-toolkit/cmd/env"
-	"github.com/previousnext/mysql-toolkit/dumper"
+	"github.com/previousnext/mysql-toolkit/internal/dumper"
 )
 
 type cmdDump struct {

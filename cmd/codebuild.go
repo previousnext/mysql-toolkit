@@ -7,7 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/codebuild"
 	cmdenv "github.com/previousnext/mysql-toolkit/cmd/env"
-	"github.com/previousnext/mysql-toolkit/codebuilder"
+	"github.com/previousnext/mysql-toolkit/internal/codebuilder"
 )
 
 type cmdCodeBuild struct {

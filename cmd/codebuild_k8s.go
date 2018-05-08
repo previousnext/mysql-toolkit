@@ -7,7 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	cmdenv "github.com/previousnext/mysql-toolkit/cmd/env"
-	codebuilderk8s "github.com/previousnext/mysql-toolkit/codebuilder/k8s"
+	codebuilderk8s "github.com/previousnext/mysql-toolkit/internal/codebuilder/k8s"
 )
 
 type cmdCodeBuildK8s struct {
