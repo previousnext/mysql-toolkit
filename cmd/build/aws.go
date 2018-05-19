@@ -19,8 +19,8 @@ func (cmd *cmdAWS) run(c *kingpin.ParseContext) error {
 	return codebuilder.Build(os.Stdout, cmd.params)
 }
 
-// CodeBuild declares the "codebuild" subcommand.
-func CodeBuild(app *kingpin.CmdClause) {
+// AWS declares the "aws" subcommand.
+func AWS(app *kingpin.CmdClause) {
 	c := new(cmdAWS)
 
 	cmd := app.Command("aws", "Build an image using AWS CodeBuild").Action(c.run)
