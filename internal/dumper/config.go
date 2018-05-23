@@ -14,6 +14,7 @@ const DefaultPlaceholder = "SANITIZED"
 type Config struct {
 	Sanitize Sanitize `yaml:"sanitize" json:"sanitize"`
 	NoData	 []string `yaml:"nodata" json:"nodata"`
+	Ignore	 []string `yaml:"ignore" json:"ignore"`
 }
 
 // Sanitize rules for while dumping a database.

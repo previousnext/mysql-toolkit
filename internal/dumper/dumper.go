@@ -64,6 +64,12 @@ func Dump(w io.Writer, params DumpParams) error {
 	for _, table := range cfg.NoData {
 		d.FilterMap[table] = "nodata"
 	}
+
+	// Assign ignore tables.
+	for _, table := range cfg.Ignore {
+		d.FilterMap[table] = "ignore"
+	}
+
 	// Assign our sanitization rules to the dumper.
 	d.SelectMap = cfg.Sanitize.Map()
 
