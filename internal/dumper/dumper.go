@@ -59,6 +59,17 @@ func Dump(w io.Writer, params DumpParams) error {
 		return errors.Wrap(err, "failed to load config")
 	}
 
+	// Assign nodata tables.
+	d.FilterMap =  make(map[string]string)
+	for _, table := range cfg.NoData {
+		d.FilterMap[table] = "nodata"
+	}
+
+	// Assign ignore tables.
+	for _, table := range cfg.Ignore {
+		d.FilterMap[table] = "ignore"
+	}
+
 	// Assign our sanitization rules to the dumper.
 	d.SelectMap = cfg.Sanitize.Map()
 
