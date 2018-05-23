@@ -13,6 +13,7 @@ const DefaultPlaceholder = "SANITIZED"
 // Config for dumping a MySQL database.
 type Config struct {
 	Sanitize Sanitize `yaml:"sanitize" json:"sanitize"`
+	NoData	 []string `yaml:"nodata" json:"nodata"`
 }
 
 // Sanitize rules for while dumping a database.
