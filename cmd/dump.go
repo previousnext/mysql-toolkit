@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"os"
+	"log"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	cmdenv "github.com/previousnext/mysql-toolkit/cmd/env"
 	"github.com/previousnext/mysql-toolkit/internal/dumper"
+	"github.com/pkg/errors"
 )
 
 type cmdDump struct {
@@ -14,7 +16,26 @@ type cmdDump struct {
 }
 
 func (cmd *cmdDump) run(c *kingpin.ParseContext) error {
-	return dumper.Dump(os.Stdout, cmd.params)
+	cfg, err := dumper.Load(cmd.params.Config)
+	if err != nil {
+		return errors.Wrap(err, "failed to load config")
+	}
+
+	var logger = log.New(os.Stdout, "", 0)
+
+	logger.Println("Opening file for writing:", cmd.params.File)
+	f, err := os.Create(cmd.params.File)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return dumper.Dump(dumper.DumpArgs{
+		Logger:     logger,
+		SQLWriter:  f,
+		Config:     cfg,
+		Connection: cmd.params.Connection,
+	})
 }
 
 // Dump declares the "dump" subcommand.

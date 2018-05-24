@@ -4,13 +4,12 @@ import (
 	"database/sql"
 	"io"
 	"log"
-	"os"
 
 	"github.com/hgfischer/mysqlsuperdump/dumper"
 	"github.com/pkg/errors"
 )
 
-// DumpParams are passed to the Dump method.
+// DumpParams store arguments provided by CLI.
 type DumpParams struct {
 	Connection Connection
 	Config     string
@@ -28,52 +27,49 @@ type Connection struct {
 	MaxConn  int
 }
 
+// DumpArgs are passed to Dump method.
+type DumpArgs struct {
+	Logger       *log.Logger
+	SQLWriter    io.Writer
+	Config       Config
+	Connection   Connection
+}
+
 // Dump the MySQL database.
-func Dump(w io.Writer, params DumpParams) error {
-	var logger = log.New(w, "", 0)
+func Dump(args DumpArgs) error {
+	logger := args.Logger
 
-	logger.Println("Connecting to Mysql database:", params.Connection.Database)
+	logger.Println("Connecting to Mysql database:", args.Connection.Database)
 
-	db, err := sql.Open("mysql", params.Connection.String())
+	db, err := sql.Open("mysql", args.Connection.String())
 	if err != nil {
 		return errors.Wrap(err, "cannot connect to database")
 	}
 	defer db.Close()
 
-	logger.Println("Opening file for writing:", params.File)
 
-	f, err := os.Create(params.File)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
 
-	logger.Println("Setting maximum connection to:", params.Connection.MaxConn)
+	logger.Println("Setting maximum connection to:", args.Connection.MaxConn)
 
-	db.SetMaxOpenConns(params.Connection.MaxConn)
+	db.SetMaxOpenConns(args.Connection.MaxConn)
 
 	d := dumper.NewMySQLDumper(db, logger)
 
-	cfg, err := Load(params.Config)
-	if err != nil {
-		return errors.Wrap(err, "failed to load config")
-	}
-
 	// Assign nodata tables.
-	d.FilterMap =  make(map[string]string)
-	for _, table := range cfg.NoData {
+	d.FilterMap = make(map[string]string)
+	for _, table := range args.Config.NoData {
 		d.FilterMap[table] = "nodata"
 	}
 
 	// Assign ignore tables.
-	for _, table := range cfg.Ignore {
+	for _, table := range args.Config.Ignore {
 		d.FilterMap[table] = "ignore"
 	}
 
 	// Assign our sanitization rules to the dumper.
-	d.SelectMap = cfg.Sanitize.Map()
+	d.SelectMap = args.Config.Sanitize.Map()
 
-	logger.Println("Starting to dump database:", params.Connection.Database)
+	logger.Println("Starting to dump database:", args.Connection.Database)
 
-	return d.Dump(f)
+	return d.Dump(args.SQLWriter)
 }
