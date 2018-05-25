@@ -39,10 +39,10 @@ func (cmd *cmdDump) run(c *kingpin.ParseContext) error {
 }
 
 // Dump declares the "dump" subcommand.
-func Dump(app *kingpin.Application) {
+func Dump(app *kingpin.CmdClause) {
 	c := new(cmdDump)
 
-	cmd := app.Command("dump", "Dump the database").Action(c.run)
+	cmd := app.Command("dump", "Dump the database using a MySQL connection").Action(c.run)
 
 	cmd.Flag("hostname", "Hostname for connecting to Mysql").Required().Envar(cmdenv.MySQLHostname).StringVar(&c.params.Connection.Hostname)
 	cmd.Flag("username", "Username for connecting to Mysql").Required().Envar(cmdenv.MySQLUsername).StringVar(&c.params.Connection.Username)

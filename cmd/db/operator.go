@@ -10,19 +10,19 @@ import (
 	codebuilderk8s "github.com/previousnext/mysql-toolkit/internal/codebuilder/k8s"
 )
 
-type cmdCodeBuildK8s struct {
+type cmdOperator struct {
 	params codebuilderk8s.SyncParams
 }
 
-func (cmd *cmdCodeBuildK8s) run(c *kingpin.ParseContext) error {
+func (cmd *cmdOperator) run(c *kingpin.ParseContext) error {
 	return codebuilderk8s.Sync(os.Stdout, cmd.params)
 }
 
-// CodeBuildK8s declares the "codebuild-k8s" subcommand.
-func CodeBuildK8s(app *kingpin.Application) {
-	c := new(cmdCodeBuildK8s)
+// Operator declares the "operator" subcommand.
+func Operator(app *kingpin.CmdClause) {
+	c := new(cmdOperator)
 
-	cmd := app.Command("codebuild-k8s", "Build a container using AWS CodeBuild").Action(c.run)
+	cmd := app.Command("operator", "Continuous image builder using a MySQL connection as the source").Action(c.run)
 
 	cmd.Flag("namespace", "Namespace to lookup ConfigMaps").Default(corev1.NamespaceAll).Envar(cmdenv.K8sNamespace).StringVar(&c.params.Namespace)
 	cmd.Flag("frequency", "How ofter CronJobs should create new CodeBuild project builds").Default("@daily").Envar(cmdenv.K8sCronJobFrequency).StringVar(&c.params.Frequency)
