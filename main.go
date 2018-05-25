@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	app := kingpin.New("mysql-toolkit", "Toolkit for working with MySQL databases")
+	app := kingpin.New("mtk", "MySQL Toolkit: utility for working with MySQL databases")
 
 	cmd.Version(app)
 
