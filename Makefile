@@ -10,7 +10,7 @@ COMMIT=$(shell git rev-list -1 HEAD)
 build:
 	gox -os='linux darwin' \
 	    -arch='amd64' \
-	    -output='bin/mysql-toolkit_{{.OS}}_{{.Arch}}' \
+	    -output='bin/mtk_{{.OS}}_{{.Arch}}' \
 	    -ldflags='-extldflags "-static" -X github.com/previousnext/mysql-toolkit/cmd.GitVersion=${VERSION} -X github.com/previousnext/mysql-toolkit/cmd.GitCommit=${COMMIT}' \
         $(PROJECT)
 

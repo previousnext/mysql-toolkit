@@ -1,4 +1,4 @@
-package cmd
+package build
 
 import (
 	"os"
@@ -10,23 +10,22 @@ import (
 	"github.com/previousnext/mysql-toolkit/internal/codebuilder"
 )
 
-type cmdCodeBuild struct {
+type cmdAWS struct {
 	Region string
 	params codebuilder.BuildParams
 }
 
-func (cmd *cmdCodeBuild) run(c *kingpin.ParseContext) error {
+func (cmd *cmdAWS) run(c *kingpin.ParseContext) error {
 	return codebuilder.Build(os.Stdout, cmd.params)
 }
 
 // CodeBuild declares the "codebuild" subcommand.
-func CodeBuild(app *kingpin.Application) {
-	c := new(cmdCodeBuild)
+func CodeBuild(app *kingpin.CmdClause) {
+	c := new(cmdAWS)
 
-	cmd := app.Command("codebuild", "Build a container using AWS CodeBuild").Action(c.run)
+	cmd := app.Command("aws", "Build an image using AWS CodeBuild").Action(c.run)
 
-	cmd.Flag("aws-region", "Region to run ").Default("ap-southeast-2").Envar(cmdenv.AWSRegion).StringVar(&c.params.Region)
-
+	cmd.Flag("region", "Region to run the build").Default("ap-southeast-2").Envar(cmdenv.AWSRegion).StringVar(&c.params.Region)
 	cmd.Flag("project", "Name for the CodeBuild project").Required().Envar(cmdenv.AWSCodeBuildProject).StringVar(&c.params.Project)
 	cmd.Flag("compute", "Size of the compute for the build").Default(codebuild.ComputeTypeBuildGeneral1Small).Envar(cmdenv.AWSCodeBuildCompute).StringVar(&c.params.Compute)
 	cmd.Flag("image", "CodeBuild image to use for executing the build").Default("aws/codebuild/docker:17.09.0").Envar(cmdenv.AWSCodeBuildImage).StringVar(&c.params.Image)
