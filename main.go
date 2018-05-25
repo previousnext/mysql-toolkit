@@ -20,7 +20,7 @@ func main() {
 	cmddb.Dump(db)
 	cmddb.Operator(db)
 
-	build := app.Command("build", "Dump the database")
+	build := app.Command("build", "Build the database image")
 	cmdbuild.CodeBuild(build)
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
