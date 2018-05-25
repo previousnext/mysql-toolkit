@@ -21,18 +21,22 @@ func (cmd *cmdDump) run(c *kingpin.ParseContext) error {
 		return errors.Wrap(err, "failed to load config")
 	}
 
-	var logger = log.New(os.Stdout, "", 0)
+	var logger = log.New(os.Stderr, "", 0)
 
-	logger.Println("Opening file for writing:", cmd.params.File)
-	f, err := os.Create(cmd.params.File)
-	if err != nil {
-		return err
+	// Use stdout if no output file specified.
+	writer := os.Stdout
+	if cmd.params.File != "" {
+		logger.Println("Opening file for writing:", cmd.params.File)
+		writer, err := os.Create(cmd.params.File)
+		if err != nil {
+			return err
+		}
+		defer writer.Close()
 	}
-	defer f.Close()
 
 	return dumper.Dump(dumper.DumpArgs{
 		Logger:     logger,
-		SQLWriter:  f,
+		SQLWriter:  writer,
 		Config:     cfg,
 		Connection: cmd.params.Connection,
 	})
@@ -52,5 +56,5 @@ func Dump(app *kingpin.CmdClause) {
 	cmd.Flag("port", "Port for connecting to Mysql").Default("3306").Envar(cmdenv.MySQLPort).StringVar(&c.params.Connection.Port)
 	cmd.Flag("max-conn", "Maximum amount of open connections").Default("50").Envar(cmdenv.MySQLMaxConn).IntVar(&c.params.Connection.MaxConn)
 	cmd.Flag("config", "Policy for dumping the database").Default("config.yml").Envar(cmdenv.MySQLConfig).StringVar(&c.params.Config)
-	cmd.Flag("file", "Location to save the dumped database").Required().Envar(cmdenv.MySQLFile).StringVar(&c.params.File)
+	cmd.Flag("file", "Location to save the dumped database. Omit to send to stdout.").Envar(cmdenv.MySQLFile).StringVar(&c.params.File)
 }
