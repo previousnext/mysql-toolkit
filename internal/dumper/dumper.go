@@ -12,8 +12,11 @@ import (
 // DumpParams store arguments provided by CLI.
 type DumpParams struct {
 	Connection Connection
-	Config     string
+	ConfigYAML string
 	File       string
+	Logger     *log.Logger
+	SQLWriter  io.Writer
+	Config     Config
 }
 
 // Connection details for MySQL.
@@ -27,16 +30,8 @@ type Connection struct {
 	MaxConn  int
 }
 
-// DumpArgs are passed to Dump method.
-type DumpArgs struct {
-	Logger       *log.Logger
-	SQLWriter    io.Writer
-	Config       Config
-	Connection   Connection
-}
-
 // Dump the MySQL database.
-func Dump(args DumpArgs) error {
+func Dump(args DumpParams) error {
 	logger := args.Logger
 
 	logger.Println("Connecting to Mysql database:", args.Connection.Database)

@@ -16,29 +16,27 @@ type cmdDump struct {
 }
 
 func (cmd *cmdDump) run(c *kingpin.ParseContext) error {
-	cfg, err := dumper.Load(cmd.params.Config)
+	cfg, err := dumper.Load(cmd.params.ConfigYAML)
 	if err != nil {
 		return errors.Wrap(err, "failed to load config")
 	}
 
-	dumpArgs := dumper.DumpArgs{
-		Logger:     log.New(os.Stderr, "", 0),
-		SQLWriter:  os.Stdout,
-		Config:     cfg,
-		Connection: cmd.params.Connection,
-	}
+	cmd.params.Config = cfg
+	cmd.params.Logger = log.New(os.Stderr, "", 0)
+	cmd.params.SQLWriter = os.Stdout
 
 	// Use stdout if no output file specified.
 	if cmd.params.File != "" {
-		dumpArgs.Logger.Println("Opening file for writing:", cmd.params.File)
+		cmd.params.Logger.Println("Opening file for writing:", cmd.params.File)
 		writer, err := os.Create(cmd.params.File)
 		if err != nil {
 			return err
 		}
+		cmd.params.SQLWriter = writer
 		defer writer.Close()
 	}
 
-	return dumper.Dump(dumpArgs)
+	return dumper.Dump(cmd.params)
 }
 
 // Dump declares the "dump" subcommand.
@@ -54,6 +52,6 @@ func Dump(app *kingpin.CmdClause) {
 	cmd.Flag("protocol", "Protocol for connecting to Mysql").Default("tcp").Envar(cmdenv.MySQLProtocol).StringVar(&c.params.Connection.Protocol)
 	cmd.Flag("port", "Port for connecting to Mysql").Default("3306").Envar(cmdenv.MySQLPort).StringVar(&c.params.Connection.Port)
 	cmd.Flag("max-conn", "Maximum amount of open connections").Default("50").Envar(cmdenv.MySQLMaxConn).IntVar(&c.params.Connection.MaxConn)
-	cmd.Flag("config", "Policy for dumping the database").Default("config.yml").Envar(cmdenv.MySQLConfig).StringVar(&c.params.Config)
+	cmd.Flag("config", "Policy for dumping the database").Default("config.yml").Envar(cmdenv.MySQLConfig).StringVar(&c.params.ConfigYAML)
 	cmd.Flag("file", "Location to save the dumped database. Omit to send to stdout.").Envar(cmdenv.MySQLFile).StringVar(&c.params.File)
 }
