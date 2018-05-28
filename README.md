@@ -20,19 +20,19 @@ The below example will cover:
 
 ### Dumping a MySQL database
 
-The `dump` command will:
+The `db dump` command will:
 
 * Connect to the MySQL database
 * Dump the database
 * Sanitize based on the `mysql-config` file
 
 ```bash
-mysql-toolkit dump --hostname=127.0.0.1 \
-                   --username=root \
-                   --password=password \
-                   --database=mydb \
-                   --config=example/config.yml \
-                   --file=/tmp/db.sql
+mtk db dump --hostname=127.0.0.1 \
+            --username=root \
+            --password=password \
+            --database=mydb \
+            --config=example/config.yml \
+            --file=/tmp/db.sql
 ```
 
 You can now store this file as you see fit, allowing developers to have a sanitized database for local development.
@@ -50,15 +50,15 @@ For this command you will need to create an IAM role which CodeBuild can use to 
 https://docs.aws.amazon.com/codebuild/latest/userguide/setting-up.html#setting-up-service-role
 
 ```bash
-mysql-toolkit codebuild --project=mysql-toolkit-example \
-                        --dockerfile=example/Dockerfile \
-                        --spec=example/buildspec.yml \
-                        --bucket=mysql-sanitized \
-                        --role=arn:aws:iam::XXXXXXXXXXXXX:role/mysql-toolkit \
-                        --docker-username=dockeruser \
-                        --docker-password=password \
-                        --docker-image=example/database:latest \
-                        --file=/tmp/db.sql
+mtk build aws --project=mysql-toolkit-example \
+              --dockerfile=example/Dockerfile \
+              --spec=example/buildspec.yml \
+              --bucket=mysql-sanitized \
+              --role=arn:aws:iam::XXXXXXXXXXXXX:role/mysql-toolkit \
+              --docker-username=dockeruser \
+              --docker-password=password \
+              --docker-image=example/database:latest \
+              --file=/tmp/db.sql
 ```
 
 ## Development
