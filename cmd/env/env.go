@@ -1,6 +1,17 @@
 package env
 
 const (
+	// AcquiaUsername for the Acquia platform.
+	AcquiaUsername = "ACQUIA_USERNAME"
+	// AcquiaPassword for the Acquia platform.
+	AcquiaPassword = "ACQUIA_PASSWORD"
+	// AcquiaSite hosted on the Acquia platform.
+	AcquiaSite = "ACQUIA_SITE"
+	// AcquiaEnvironment hosted on the Acquia platform.
+	AcquiaEnvironment = "ACQUIA_ENVIRONMENT"
+	// AcquiaDatabase hosted on the Acquia platform.
+	AcquiaDatabase = "ACQUIA_DATABASE"
+
 	// DockerUsername for Docker Hub.
 	DockerUsername = "DOCKER_USERNAME"
 	// DockerPassword for Docker Hub.
