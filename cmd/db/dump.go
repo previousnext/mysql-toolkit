@@ -23,12 +23,9 @@ func (cmd *cmdDump) run(c *kingpin.ParseContext) error {
 		return errors.Wrap(err, "failed to load config")
 	}
 
-	cmd.params = dumper.DumpParams{
-		Logger:     log.New(os.Stderr, "", 0),
-		SQLWriter:  os.Stdout,
-		Config:     cfg,
-		Connection: cmd.params.Connection,
-	}
+	cmd.params.Config = cfg
+	cmd.params.Logger = log.New(os.Stderr, "", 0)
+	cmd.params.SQLWriter = os.Stdout
 
 	// Use stdout if no output file specified.
 	if cmd.file != "" {
