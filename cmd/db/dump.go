@@ -21,12 +21,16 @@ func (cmd *cmdDump) run(c *kingpin.ParseContext) error {
 		return errors.Wrap(err, "failed to load config")
 	}
 
-	var logger = log.New(os.Stderr, "", 0)
+	dumpArgs := dumper.DumpArgs{
+		Logger:     log.New(os.Stderr, "", 0),
+		SQLWriter:  os.Stdout,
+		Config:     cfg,
+		Connection: cmd.params.Connection,
+	}
 
 	// Use stdout if no output file specified.
-	writer := os.Stdout
 	if cmd.params.File != "" {
-		logger.Println("Opening file for writing:", cmd.params.File)
+		dumpArgs.Logger.Println("Opening file for writing:", cmd.params.File)
 		writer, err := os.Create(cmd.params.File)
 		if err != nil {
 			return err
@@ -34,12 +38,7 @@ func (cmd *cmdDump) run(c *kingpin.ParseContext) error {
 		defer writer.Close()
 	}
 
-	return dumper.Dump(dumper.DumpArgs{
-		Logger:     logger,
-		SQLWriter:  writer,
-		Config:     cfg,
-		Connection: cmd.params.Connection,
-	})
+	return dumper.Dump(dumpArgs)
 }
 
 // Dump declares the "dump" subcommand.
