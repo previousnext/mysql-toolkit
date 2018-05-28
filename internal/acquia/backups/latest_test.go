@@ -27,5 +27,5 @@ func TestFindLatest(t *testing.T) {
 	}
 
 	actual := findLatest(Backups)
-	assert.Equal(t, 2, actual.ID, "latest backup returned")
+	assert.Equal(t, int64(2), actual.ID, "latest backup returned")
 }
