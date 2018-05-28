@@ -9,11 +9,16 @@ func (c Client) Latest() (Backup, error) {
 		return backup, nil
 	}
 
+	latestBackup := findLatest(list)
+	return latestBackup, nil
+}
+
+func findLatest(list []Backup) Backup {
+	var backup Backup
 	for _, item := range list {
 		if item.Completed > backup.Completed {
 			backup = item
 		}
 	}
-
-	return backup, nil
+	return backup
 }
