@@ -9,8 +9,7 @@ func (c Client) Latest() (Backup, error) {
 		return backup, nil
 	}
 
-	latestBackup := findLatest(list)
-	return latestBackup, nil
+	return findLatest(list), nil
 }
 
 func findLatest(list []Backup) Backup {
