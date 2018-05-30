@@ -16,6 +16,4 @@ ADD scripts/mysql-stop.sh /usr/local/bin/mysql-stop
 ADD scripts/user-create.sh /usr/local/bin/user-create
 RUN chmod +x /usr/local/bin/*
 
-EXPOSE 3306
-
 CMD ["/usr/local/bin/mysql-start"]
