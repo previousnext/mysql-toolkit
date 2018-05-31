@@ -49,7 +49,7 @@ func Build(w io.Writer, params BuildParams) error {
 
 	fmt.Fprintln(w, "Compiling source (Dockerfile/BuildSpec/Database)")
 
-	pkg, err := compile(params.Dockerfile, params.BuildSpec, params.Database, params.Project)
+	pkg, err := compile(params.Project, params.Dockerfile, params.BuildSpec, params.Database)
 	if err != nil {
 		return errors.Wrap(err, "failed to package source")
 	}
