@@ -23,7 +23,7 @@ func Docker(app *kingpin.CmdClause) {
 
 	cmd := app.Command("docker", "Build an image using Docker").Action(c.run)
 
-	cmd.Flag("dockerfile", "Path to the Dockerfile use to build the image").Required().Envar(cmdenv.AWSCodeBuildDockerfile).StringVar(&c.params.Dockerfile)
+	cmd.Flag("dockerfile", "Path to the Dockerfile use to build the image").Required().Envar(cmdenv.Dockerfile).StringVar(&c.params.Dockerfile)
 	cmd.Flag("username", "Username for the Docker Registry").Required().Envar(cmdenv.DockerUsername).StringVar(&c.params.Username)
 	cmd.Flag("password", "Password for the Docker Registry").Required().Envar(cmdenv.DockerPassword).StringVar(&c.params.Password)
 	cmd.Flag("image", "Name to push to the registry").Required().Envar(cmdenv.DockerImage).StringVar(&c.params.Image)

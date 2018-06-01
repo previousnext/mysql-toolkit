@@ -73,7 +73,7 @@ func Build(w io.Writer, params BuildParams) error {
 
 	authBase64, err := auth.Base64(params.Username, params.Password)
 	if err != nil {
-		return errors.Wrap(err, "failed to build auth credentials")
+		return errors.Wrap(err, "failed to setup credentials")
 	}
 
 	push, err := cli.ImagePush(context.Background(), params.Image, types.ImagePushOptions{

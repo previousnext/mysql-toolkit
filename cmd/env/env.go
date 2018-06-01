@@ -18,6 +18,8 @@ const (
 	DockerPassword = "DOCKER_PASSWORD"
 	// DockerImage stored on Docker Hub.
 	DockerImage = "DOCKER_IMAGE"
+	// Dockerfile used to build an image.
+	Dockerfile = "DOCKER_FILE"
 
 	// MySQLFile for dumping and loading.
 	MySQLFile = "MYSQL_FILE"

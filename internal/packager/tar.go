@@ -13,6 +13,7 @@ const (
 	// Dockerfile path inside tar package.
 	Dockerfile = "Dockerfile"
 	// Database path inside tar package.
+	// @todo, Replace with an ARG.
 	Database = "db.sql"
 )
 
@@ -45,7 +46,6 @@ func Tar(params TarParams) (string, error) {
 		if err != nil {
 			return path, err
 		}
-		defer file.Close()
 
 		stat, err := file.Stat()
 		if err != nil {
@@ -65,6 +65,11 @@ func Tar(params TarParams) (string, error) {
 		}
 
 		_, err = io.Copy(tarWriter, file)
+		if err != nil {
+			return path, err
+		}
+
+		err = file.Close()
 		if err != nil {
 			return path, err
 		}
