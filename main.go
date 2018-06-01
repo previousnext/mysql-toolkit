@@ -26,6 +26,7 @@ func main() {
 
 	build := app.Command("build", "Builders for creating MySQL images")
 	cmdbuild.AWS(build)
+	cmdbuild.Docker(build)
 
 	kingpin.MustParse(app.Parse(os.Args[1:]))
 }
