@@ -43,6 +43,9 @@ nodata:
   - search_dataset
   - search_index
   - search_total
+  # Drupal State API storage.
+  - key_value
+  - key_value_expire
 
 ignore:
   - __ACQUIA_MONITORING__
