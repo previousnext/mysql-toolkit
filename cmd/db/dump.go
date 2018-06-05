@@ -1,19 +1,19 @@
 package cmd
 
 import (
-	"os"
 	"log"
+	"os"
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
+	"github.com/pkg/errors"
 	cmdenv "github.com/previousnext/mysql-toolkit/cmd/env"
 	"github.com/previousnext/mysql-toolkit/internal/dumper"
-	"github.com/pkg/errors"
 )
 
 type cmdDump struct {
 	params dumper.DumpParams
-	file string
+	file   string
 	config string
 }
 
@@ -30,11 +30,14 @@ func (cmd *cmdDump) run(c *kingpin.ParseContext) error {
 	// Use stdout if no output file specified.
 	if cmd.file != "" {
 		cmd.params.Logger.Println("Opening file for writing:", cmd.file)
+
 		writer, err := os.Create(cmd.file)
 		if err != nil {
 			return err
 		}
 		defer writer.Close()
+
+		cmd.params.SQLWriter = writer
 	}
 
 	return dumper.Dump(cmd.params)
