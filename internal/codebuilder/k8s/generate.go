@@ -67,7 +67,7 @@ func generateCronJob(configmap corev1.ConfigMap, params SyncParams) (*batchv1bet
 									"/bin/sh", "-c",
 								},
 								Args: []string{
-									fmt.Sprintf("mysql-toolkit version"),
+									fmt.Sprintf("mtk version"),
 								},
 								Resources:       resources,
 								ImagePullPolicy: "Always",
@@ -101,7 +101,7 @@ func generateCronJob(configmap corev1.ConfigMap, params SyncParams) (*batchv1bet
 									"/bin/sh", "-c",
 								},
 								Args: []string{
-									fmt.Sprintf("mysql-toolkit dump"),
+									fmt.Sprintf("mtk db dump"),
 								},
 								Resources:       resources,
 								ImagePullPolicy: "Always",
@@ -159,7 +159,7 @@ func generateCronJob(configmap corev1.ConfigMap, params SyncParams) (*batchv1bet
 									"/bin/sh", "-c",
 								},
 								Args: []string{
-									fmt.Sprintf("mysql-toolkit codebuild"),
+									fmt.Sprintf("mtk build aws"),
 								},
 								Resources:       resources,
 								ImagePullPolicy: "Always",
