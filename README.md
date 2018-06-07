@@ -5,61 +5,13 @@ MySQL Toolkit
 
 **Maintainer**: Nick Schuch
 
-Toolkit for working with MySQL databases.
+A toolkit for santizing, packaging and deploying MySQL images.
 
-* Exporting
-* Building a container image for developers (Docker Compose etc)
-* Integrating with container orchestrators
+https://www.previousnext.com.au/blog/sharing-state-containerized-databases-developers
 
-## Usage
+## Installation
 
-The below example will cover:
-
-* Dumping a sanitized database
-* Building a Docker image with AWS CodeBuild
-
-### Dumping a MySQL database
-
-The `db dump` command will:
-
-* Connect to the MySQL database
-* Dump the database
-* Sanitize based on the `mysql-config` file
-
-```bash
-mtk db dump --hostname=127.0.0.1 \
-            --username=root \
-            --password=password \
-            --database=mydb \
-            --config=example/config.yml \
-            --file=/tmp/db.sql
-```
-
-You can now store this file as you see fit, allowing developers to have a sanitized database for local development.
-
-### Building a MySQL container image
-
-The below command will:
-
-* Upload a ZIP containing a Dockerfile, buildspec.yml and db.sql to S3
-* Create a CodeBuild project
-* Trigger a CodeBuild project build
-
-For this command you will need to create an IAM role which CodeBuild can use to access to S3 bucket.
-
-https://docs.aws.amazon.com/codebuild/latest/userguide/setting-up.html#setting-up-service-role
-
-```bash
-mtk build aws --project=mysql-toolkit-example \
-              --dockerfile=example/Dockerfile \
-              --spec=example/buildspec.yml \
-              --bucket=mysql-sanitized \
-              --role=arn:aws:iam::XXXXXXXXXXXXX:role/mysql-toolkit \
-              --docker-username=dockeruser \
-              --docker-password=password \
-              --docker-image=example/database:latest \
-              --file=/tmp/db.sql
-```
+Installation instructions are availabe via the [releases page](https://github.com/previousnext/mysql-toolkit/releases)
 
 ## Development
 
