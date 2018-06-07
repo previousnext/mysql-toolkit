@@ -9,6 +9,8 @@ A toolkit for santizing, packaging and deploying MySQL images.
 
 https://www.previousnext.com.au/blog/sharing-state-containerized-databases-developers
 
+![Diagram](/docs/diagram.png "Diagram")
+
 ## Installation
 
 Installation instructions are availabe via the [releases page](https://github.com/previousnext/mysql-toolkit/releases)
