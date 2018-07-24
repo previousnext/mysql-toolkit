@@ -1,11 +1,12 @@
 package codebuilder
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/codebuild"
 	"path/filepath"
 
-	cmdenv "github.com/previousnext/mysql-toolkit/cmd/env"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/codebuild"
+
+	"github.com/previousnext/mysql-toolkit/internal/envar"
 )
 
 // CreateProjectInput used for CreateProject CodeBuild method.
@@ -25,15 +26,15 @@ func (b *BuildParams) CreateProjectInput(source string) *codebuild.CreateProject
 			Image:       aws.String(b.Image),
 			EnvironmentVariables: []*codebuild.EnvironmentVariable{
 				{
-					Name:  aws.String(cmdenv.DockerUsername),
+					Name:  aws.String(envar.DockerUsername),
 					Value: aws.String(b.Docker.Username),
 				},
 				{
-					Name:  aws.String(cmdenv.DockerPassword),
+					Name:  aws.String(envar.DockerPassword),
 					Value: aws.String(b.Docker.Password),
 				},
 				{
-					Name:  aws.String(cmdenv.DockerImage),
+					Name:  aws.String(envar.DockerImage),
 					Value: aws.String(b.Docker.Image),
 				},
 			},
@@ -59,15 +60,15 @@ func (b *BuildParams) UpdateProjectInput(source string) *codebuild.UpdateProject
 			Image:       aws.String(b.Image),
 			EnvironmentVariables: []*codebuild.EnvironmentVariable{
 				{
-					Name:  aws.String(cmdenv.DockerUsername),
+					Name:  aws.String(envar.DockerUsername),
 					Value: aws.String(b.Docker.Username),
 				},
 				{
-					Name:  aws.String(cmdenv.DockerPassword),
+					Name:  aws.String(envar.DockerPassword),
 					Value: aws.String(b.Docker.Password),
 				},
 				{
-					Name:  aws.String(cmdenv.DockerImage),
+					Name:  aws.String(envar.DockerImage),
 					Value: aws.String(b.Docker.Image),
 				},
 			},
