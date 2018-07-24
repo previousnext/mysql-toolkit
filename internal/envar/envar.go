@@ -1,4 +1,4 @@
-package env
+package envar
 
 const (
 	// AcquiaUsername for the Acquia platform.
@@ -64,24 +64,17 @@ const (
 	// AWSCodeBuildImage to use for building the image.
 	AWSCodeBuildImage = "AWS_CODEBUILD_IMAGE"
 
-	// K8sNamespace to ConfigMap discovery.
-	K8sNamespace = "K8S_NAMESPACE"
-	// K8sCronJobFrequency for running created/updates CronJobs.
-	K8sCronJobFrequency = "K8S_CRONJOB_FREQUENCY"
-	// K8sCronJobImage for running created/updates CronJobs.
-	K8sCronJobImage = "K8S_CRONJOB_IMAGE"
-	// K8sCronJobCPU for running created/updates CronJobs.
-	K8sCronJobCPU = "K8S_CRONJOB_CPU"
-	// K8sCronJobMemory for running created/updates CronJobs.
-	K8sCronJobMemory = "K8S_CRONJOB_MEMORY"
-	// K8sConfigMapKeyHostname for ConfigMap discovery.
-	K8sConfigMapKeyHostname = "K8S_CONFIGMAP_KEY_HOSTNAME"
-	// K8sConfigMapKeyUsername for ConfigMap discovery.
-	K8sConfigMapKeyUsername = "K8S_CONFIGMAP_KEY_USERNAME"
-	// K8sConfigMapKeyPassword for ConfigMap discovery.
-	K8sConfigMapKeyPassword = "K8S_CONFIGMAP_KEY_PASSWORD"
-	// K8sConfigMapKeyDatabase for ConfigMap discovery.
-	K8sConfigMapKeyDatabase = "K8S_CONFIGMAP_KEY_DATABASE"
-	// K8sConfigMapKeyImage for ConfigMap discovery.
-	K8sConfigMapKeyImage = "K8S_CONFIGMAP_KEY_IMAGE"
+	// K8sJobImage for running created/updates CronJobs.
+	K8sJobImage = "K8S_JOB_IMAGE"
+	// K8sJobCPU for running created/updates CronJobs.
+	K8sJobCPU = "K8S_JOB_CPU"
+	// K8sJobMemory for running created/updates CronJobs.
+	K8sJobMemory = "K8S_JOB_MEMORY"
+	// K8sJobSecret for storing secrets.
+	K8sJobSecret = "K8S_JOB_SECRET"
+
+	// OperatorNamespace used to watch for CRDs.
+	OperatorNamespace = "OPERATOR_NAMESPACE"
+	// OperatorResync tells the operator how long before it resyncs CRDs.
+	OperatorResync = "OPERATOR_RESYNC"
 )

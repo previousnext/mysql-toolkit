@@ -1,4 +1,4 @@
-package cmd
+package version
 
 import (
 	"fmt"
@@ -35,8 +35,8 @@ func (cmd *cmdVersion) run(c *kingpin.ParseContext) error {
 	})
 }
 
-// Version declares the "version" sub command.
-func Version(app *kingpin.Application) {
+// Command declares the "version" sub command.
+func Command(app *kingpin.Application) {
 	cmd := new(cmdVersion)
 	app.Command("version", fmt.Sprintf("Prints %s version", app.Name)).Action(cmd.run)
 }
