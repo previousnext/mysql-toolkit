@@ -270,6 +270,15 @@
   revision = "9cad4c3443a7200dd6400aef47183728de563a38"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/hashicorp/golang-lru"
+  packages = [
+    ".",
+    "simplelru"
+  ]
+  revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
+
+[[projects]]
   name = "github.com/hgfischer/mysqlsuperdump"
   packages = ["dumper"]
   revision = "f359c8092e69204380dac6ffda009c936f86c136"
@@ -351,6 +360,21 @@
   version = "v1.0.0-rc1"
 
 [[projects]]
+  name = "github.com/operator-framework/operator-sdk"
+  packages = [
+    "pkg/k8sclient",
+    "pkg/sdk",
+    "pkg/sdk/action",
+    "pkg/sdk/handler",
+    "pkg/sdk/informer",
+    "pkg/sdk/query",
+    "pkg/sdk/types",
+    "pkg/util/k8sutil"
+  ]
+  revision = "31577c9d90b99b63043d2014de8fb2dd855aee78"
+  version = "v0.0.5"
+
+[[projects]]
   branch = "master"
   name = "github.com/petar/GoLLRB"
   packages = ["llrb"]
@@ -381,10 +405,22 @@
   revision = "9de7883755280ca31974294beb85618f719e127e"
 
 [[projects]]
-  name = "github.com/previousnext/skpr"
-  packages = ["utils/k8s/cronjob"]
-  revision = "e45003795b75988bf90122437d307f9ecef2b313"
-  version = "v2.0.0-alpha1"
+  branch = "master"
+  name = "github.com/prometheus/common"
+  packages = ["log"]
+  revision = "7600349dcfe1abd18d72d3a1770870d9800a7801"
+
+[[projects]]
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -411,6 +447,12 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "a2144134853fc9a27a7b1e3eb4f19f1a76df13c9"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -430,7 +472,9 @@
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
+    "windows/registry",
+    "windows/svc/eventlog"
   ]
   revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
 
@@ -515,6 +559,7 @@
     "pkg/api/errors",
     "pkg/api/meta",
     "pkg/api/resource",
+    "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
     "pkg/apis/meta/v1alpha1",
@@ -532,7 +577,9 @@
     "pkg/runtime/serializer/versioning",
     "pkg/selection",
     "pkg/types",
+    "pkg/util/cache",
     "pkg/util/clock",
+    "pkg/util/diff",
     "pkg/util/errors",
     "pkg/util/framer",
     "pkg/util/intstr",
@@ -555,6 +602,8 @@
   name = "k8s.io/client-go"
   packages = [
     "discovery",
+    "discovery/cached",
+    "dynamic",
     "kubernetes",
     "kubernetes/scheme",
     "kubernetes/typed/admissionregistration/v1alpha1",
@@ -588,13 +637,17 @@
     "pkg/version",
     "rest",
     "rest/watch",
+    "tools/cache",
     "tools/clientcmd/api",
     "tools/metrics",
+    "tools/pager",
     "tools/reference",
     "transport",
+    "util/buffer",
     "util/cert",
     "util/flowcontrol",
-    "util/integer"
+    "util/integer",
+    "util/workqueue"
   ]
   revision = "9389c055a838d4f208b699b3c7c51b70f2368861"
   version = "kubernetes-1.9.1"
@@ -608,6 +661,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "431f250496127f8e6603b485661f59ed6536d38359c03ed30ac0474de027a900"
+  inputs-digest = "07142e145432d160330ac0888c21921cae7143712eff963768dd665a97b183fb"
   solver-name = "gps-cdcl"
   solver-version = 1
