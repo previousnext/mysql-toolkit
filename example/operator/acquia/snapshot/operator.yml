@@ -1,0 +1,144 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: acquiasnapshots.mtk.skpr.io
+spec:
+  group: mtk.skpr.io
+  names:
+    kind: AcquiaSnapshot
+    listKind: AcquiaSnapshotList
+    plural: acquiasnapshots
+    singular: acquiasnapshot
+  scope: Namespaced
+  version: v1alpha1
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mtk-acquia-snapshot
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: operator
+  namespace: mtk-acquia-snapshot
+  labels:
+    app: operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: operator
+  template:
+    metadata:
+      labels:
+        app: operator
+    spec:
+      serviceAccountName: operator
+      containers:
+      - name: operator
+        image: previousnext/mtk-operator:latest
+        command:
+        - sh
+        - -c
+        args:
+        - mtk-operator acquia snapshot
+        env:
+          - name: OPERATOR_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: OPERATOR_SECRET
+            value: operator-default-credentials
+        resources:
+          limits:
+            cpu:    100m
+            memory: 128Mi
+          requests:
+            cpu:    100m
+            memory: 128Mi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: operator-default-credentials
+  namespace: mtk-acquia-snapshot
+type: Opaque
+stringData:
+  aws.role:        "xxxxxxxxxxxxxxxxxxxx"
+  aws.bucket:      "xxxxxxxxxxxxxxxxxxxx"
+  aws.key.id:      "xxxxxxxxxxxxxxxxxxxx"
+  aws.key.access:  "xxxxxxxxxxxxxxxxxxxx"
+  docker.username: "xxxxxxxxxxxxxxxxxxxx"
+  docker.password: "xxxxxxxxxxxxxxxxxxxx"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: operator
+  namespace: mtk-acquia-snapshot
+---
+##
+# ClusterRole and ClusterRoleBinding
+#   Allows the operator to load secrets from the
+#   same namespace which the AcquiaSnapshot resource
+#   was created.
+##
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: mtk-acquia-snapshot
+rules:
+- apiGroups: ["mtk.skpr.io"]
+  resources: ["acquiasnapshots"]
+  verbs: ["*"]
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["secrets"]
+  verbs: ["get"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: mtk-acquia-snapshot
+subjects:
+- kind: ServiceAccount
+  name: operator
+  namespace: mtk-acquia-snapshot
+roleRef:
+  kind: ClusterRole
+  name: mtk-acquia-snapshot
+  apiGroup: rbac.authorization.k8s.io
+---
+##
+# Role and RoleBinding
+#   Allows the operator to create objects to complete the snapshot
+#   task inside its own namespace.
+##
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: operator
+  namespace: mtk-acquia-snapshot
+rules:
+- apiGroups: ["mtk.skpr.io"]
+  resources: ["acquiasnapshots"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["secrets","configmaps"]
+  verbs: ["create"]
+- apiGroups: ["batch"]
+  resources: ["jobs","cronjobs"]
+  verbs: ["get","create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: operator
+  namespace: mtk-acquia-snapshot
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: operator
+subjects:
+- kind: ServiceAccount
+  name: operator
