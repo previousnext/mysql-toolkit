@@ -16,20 +16,18 @@ sanitize:
           value: "SANITIZED_PASSWORD"
 
 nodata:
-  regex:
-    - cache.*
-  tables:
-    - captcha_sessions
-    - history
-    - flood
-    - batch
-    - queue
-    - sessions
-    - semaphore
-    - search_api_task
-    - search_dataset
-    - search_index
-    - search_total
+  - cache.*
+  - captcha_sessions
+  - history
+  - flood
+  - batch
+  - queue
+  - sessions
+  - semaphore
+  - search_api_task
+  - search_dataset
+  - search_index
+  - search_total
 
 ignore:
   - __ACQUIA_MONITORING__

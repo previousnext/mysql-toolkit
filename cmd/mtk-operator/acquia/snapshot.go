@@ -33,7 +33,7 @@ func Snapshot(app *kingpin.CmdClause) {
 	c := new(cmdSnapshot)
 
 	cmd := app.Command("snapshot", "Operator for running a single 'Snapshot' snapshot").Action(c.run)
-	cmd.Flag("watch", "Namespace to watch for new AcquiaSnapshot objects").Default(corev1.NamespaceAll).Envar(envar.OperatorWatch).StringVar(&c.Watch)
+	cmd.Flag("namespace-watch", "Namespace to watch for new AcquiaSnapshot objects").Default(corev1.NamespaceAll).Envar(envar.OperatorNamespaceWatch).StringVar(&c.Watch)
 	cmd.Flag("namespace", "Namespace to execute AcquiaSnapshot Jobs").Required().Envar(envar.OperatorNamespace).StringVar(&c.Namespace)
 	cmd.Flag("secret", "Secret for loading Operator configuration").Required().Envar(envar.OperatorSecret).StringVar(&c.Secret)
 	cmd.Flag("resync", "How often to resync all the AcquiaSnapshot objects").Default("30").Envar(envar.OperatorResync).IntVar(&c.Resync)

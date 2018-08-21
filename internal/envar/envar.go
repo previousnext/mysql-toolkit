@@ -64,8 +64,8 @@ const (
 	// AWSCodeBuildImage to use for building the image.
 	AWSCodeBuildImage = "AWS_CODEBUILD_IMAGE"
 
-	// OperatorWatch these namespaces for CustomResources.
-	OperatorWatch = "OPERATOR_WATCH"
+	// OperatorNamespaceWatch these namespaces for CustomResources.
+	OperatorNamespaceWatch = "OPERATOR_NAMESPACE_WATCH"
 	// OperatorNamespace used execute Jobs.
 	OperatorNamespace = "OPERATOR_NAMESPACE"
 	// OperatorSecret used to loading configuration.
