@@ -16,7 +16,7 @@ sanitize:
           value: "SANITIZED_PASSWORD"
 
 nodata:
-  - cache.*
+  - cache*
   - captcha_sessions
   - history
   - flood
