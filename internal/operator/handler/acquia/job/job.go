@@ -17,15 +17,24 @@ import (
 )
 
 const (
+	// KeyAcquiaUsername for authentication.
 	KeyAcquiaUsername = "acquia.username"
+	// KeyAcquiaPassword for authentication.
 	KeyAcquiaPassword = "acquia.password"
+	// KeyDockerUsername for authentication.
 	KeyDockerUsername = "docker.username"
+	// KeyDockerPassword for authentication.
 	KeyDockerPassword = "docker.password"
-	KeyAWSRole        = "aws.role"
-	KeyAWSKey         = "aws.key.id"
-	KeyAWSAccess      = "aws.key.access"
-	KeyAWSBucket      = "aws.bucket"
-	KeyMtkConfig      = "mtk.yml"
+	// KeyAWSRole for AWS CodeBuild role assume.
+	KeyAWSRole = "aws.role"
+	// KeyAWSKey for authentication.
+	KeyAWSKey = "aws.key.id"
+	// KeyAWSAccess for authentication.
+	KeyAWSAccess = "aws.key.access"
+	// KeyAWSBucket for AWS CodeBuild to consume during a built.
+	KeyAWSBucket = "aws.bucket"
+	// KeyMtkConfig file for mtk ruleset.
+	KeyMtkConfig = "mtk.yml"
 )
 
 // Params passed to GenerateSpec.
@@ -41,6 +50,7 @@ type Params struct {
 	Memory    string
 }
 
+// Validate the params.
 func (p Params) Validate() error {
 	if p.Namespace == "" {
 		return errors.New("not found: namespace")
@@ -81,6 +91,7 @@ func (p Params) Validate() error {
 	return nil
 }
 
+// Generate a ConfigMap, Secret and Job object for executing a snapshot.
 func Generate(params Params) (*batchv1.Job, *corev1.ConfigMap, *corev1.Secret, error) {
 	err := params.Validate()
 	if err != nil {
@@ -105,6 +116,7 @@ func Generate(params Params) (*batchv1.Job, *corev1.ConfigMap, *corev1.Secret, e
 	return job, configmap, secret, nil
 }
 
+// Helper function to generate a ConfigMap.
 func generateConfigMap(params Params) (*corev1.ConfigMap, error) {
 	config, err := yaml.Marshal(&params.Config)
 	if err != nil {
@@ -126,6 +138,7 @@ func generateConfigMap(params Params) (*corev1.ConfigMap, error) {
 	}, nil
 }
 
+// Helper function to generate a Secret.
 func generateSecret(params Params) (*corev1.Secret, error) {
 	return &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{
@@ -149,7 +162,7 @@ func generateSecret(params Params) (*corev1.Secret, error) {
 	}, nil
 }
 
-// Helper function to generate a Job object.
+// Helper function to generate a Job.
 func generateJob(params Params) (*batchv1.Job, error) {
 	// Backoff determines how many times the build fails before it does not get recreated.
 	// This amount allows for any "transient" issues that could be fixed with a rerun.
