@@ -127,7 +127,7 @@ func reconcile(namespace, secret, image, cpu, memory string, cr *v1alpha1.Acquia
 	p.Add("Create Job", func() (sdkstatus.Status, error) {
 		logger.Infoln("Generating Job")
 
-		obj, err := generate.Job(cr.ObjectMeta.Namespace, name, image, cpu, memory, cr.Spec.Database, cr.Spec.Docker)
+		obj, err := generate.Job(namespace, name, image, cpu, memory, cr.Spec.Database, cr.Spec.Docker)
 		if err != nil {
 			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to generate: Job")
 		}
@@ -153,7 +153,7 @@ func reconcile(namespace, secret, image, cpu, memory string, cr *v1alpha1.Acquia
 				APIVersion: "batch/v1",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace: cr.ObjectMeta.Namespace,
+				Namespace: namespace,
 				Name:      name,
 			},
 		}
