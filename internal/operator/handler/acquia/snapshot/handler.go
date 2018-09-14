@@ -2,8 +2,8 @@ package snapshot
 
 import (
 	"fmt"
-	"time"
 
+	sdkstatus "github.com/nickschuch/operator-sdk-status"
 	sdkaction "github.com/operator-framework/operator-sdk/pkg/sdk/action"
 	sdkhandler "github.com/operator-framework/operator-sdk/pkg/sdk/handler"
 	sdkquery "github.com/operator-framework/operator-sdk/pkg/sdk/query"
@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/previousnext/mysql-toolkit/internal/operator/apis/mtk/v1alpha1"
-	"github.com/previousnext/mysql-toolkit/internal/operator/handler/acquia/job"
+	"github.com/previousnext/mysql-toolkit/internal/operator/handler/acquia/generate"
 	"github.com/previousnext/mysql-toolkit/internal/operator/handler/acquia/secrets"
 )
 
@@ -49,9 +49,7 @@ type Handler struct {
 func (h *Handler) Handle(ctx sdktypes.Context, event sdktypes.Event) error {
 	switch cr := event.Object.(type) {
 	case *v1alpha1.AcquiaSnapshot:
-		logger := log.With("namespace", cr.ObjectMeta.Namespace).With("name", cr.ObjectMeta.Name)
-
-		err := reconcile(logger, h.Namespace, h.Secret, h.Image, h.CPU, h.Memory, cr)
+		err := reconcile(h.Namespace, h.Secret, h.Image, h.CPU, h.Memory, cr)
 		if err != nil {
 			return err
 		}
@@ -61,42 +59,11 @@ func (h *Handler) Handle(ctx sdktypes.Context, event sdktypes.Event) error {
 }
 
 // Helper function to reconcile status updates and execution.
-func reconcile(logger log.Logger, namespace, secret, image, cpu, memory string, cr *v1alpha1.AcquiaSnapshot) error {
-	if cr.Status.Phase != "" {
-		return nil
-	}
+func reconcile(namespace, secret, image, cpu, memory string, cr *v1alpha1.AcquiaSnapshot) error {
+	var p sdkstatus.Pipeline
 
-	err := updateStatus(logger, cr, v1alpha1.PhaseRunning, "Loading Configuration Job")
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
-
-	compiledSecrets, err := secrets.Load(namespace, secret, cr.ObjectMeta.Namespace, cr.Spec.Credentials)
-	if err != nil {
-		return errors.Wrap(err, "failed to compile configuration")
-	}
-
-	err = updateStatus(logger, cr, v1alpha1.PhaseRunning, "Generating Job")
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
-
-	generateParams := job.Params{
-		Namespace: namespace,
-		Name:      fmt.Sprintf("%s-%s-%s", prefix, cr.ObjectMeta.Namespace, cr.ObjectMeta.Name),
-		Database:  cr.Spec.Database,
-		Docker:    cr.Spec.Docker,
-		Secrets:   compiledSecrets,
-		Config:    cr.Spec.Config,
-		Image:     image,
-		CPU:       cpu,
-		Memory:    memory,
-	}
-
-	genJob, genConfigmap, genSecret, err := job.Generate(generateParams)
-	if err != nil {
-		return errors.Wrap(err, "failed to generate Job")
-	}
+	// Common identifier for all Job/ConfigMap/Secret objects within the operators namespace.
+	name := fmt.Sprintf("%s-%s-%s", prefix, cr.ObjectMeta.Namespace, cr.ObjectMeta.Name)
 
 	ref := []metav1.OwnerReference{
 		*metav1.NewControllerRef(cr, schema.GroupVersionKind{
@@ -106,85 +73,123 @@ func reconcile(logger log.Logger, namespace, secret, image, cpu, memory string, 
 		}),
 	}
 
-	genJob.ObjectMeta.OwnerReferences = ref
-	genConfigmap.ObjectMeta.OwnerReferences = ref
-	genSecret.ObjectMeta.OwnerReferences = ref
+	logger := log.With("namespace", cr.ObjectMeta.Namespace).With("name", cr.ObjectMeta.Name)
 
-	err = updateStatus(logger, cr, v1alpha1.PhaseRunning, "Creating Job")
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
+	logger.Infoln("Starting reconciliation loop")
 
-	err = sdkaction.Create(genConfigmap)
-	if err != nil {
-		return errors.Wrap(err, "failed to create ConfigMap")
-	}
+	p.Add("Create ConfigMap", func() (sdkstatus.Status, error) {
+		logger.Infoln("Generating ConfigMap")
 
-	err = sdkaction.Create(genSecret)
-	if err != nil {
-		return errors.Wrap(err, "failed to create Secret")
-	}
+		obj, err := generate.ConfigMap(namespace, name, cr.Spec.Config)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to generate: ConfigMap")
+		}
 
-	err = sdkaction.Create(genJob)
-	if err != nil {
-		return errors.Wrap(err, "failed to create Job")
-	}
+		obj.ObjectMeta.OwnerReferences = ref
 
-	err = updateStatus(logger, cr, v1alpha1.PhaseRunning, "Waiting for Job to finish")
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
+		logger.Infoln("Creating ConfigMap")
 
-	err = wait(genJob)
-	if err != nil {
-		return errors.Wrap(err, "job failed")
-	}
+		err = sdkaction.Create(obj)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to create: ConfigMap")
+		}
 
-	err = updateStatus(logger, cr, v1alpha1.PhaseComplete, "Image has been built")
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
+		return sdkstatus.StatusFinished, nil
+	})
 
-	return nil
-}
+	p.Add("Create Secret", func() (sdkstatus.Status, error) {
+		logger.Infoln("Loading Secrets")
 
-// Helper function to update the CustomResource status.
-func updateStatus(logger log.Logger, cr *v1alpha1.AcquiaSnapshot, status v1alpha1.Phase, message string) error {
-	logger.Info(status, message)
+		values, err := secrets.Load(namespace, secret, cr.ObjectMeta.Namespace, cr.Spec.Credentials)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to get values: Secret")
+		}
 
-	cr.Status = v1alpha1.AcquiaStatus{
-		Phase:   status,
-		Updated: time.Now(),
-		Message: message,
-	}
+		logger.Infoln("Generating Secret")
 
-	return sdkaction.Update(cr)
-}
+		obj, err := generate.Secret(namespace, name, values)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to generate: Secret")
+		}
 
-// Helper function to wait for Job to finish.
-func wait(job *batchv1.Job) error {
-	limiter := time.Tick(time.Second * 5)
+		obj.ObjectMeta.OwnerReferences = ref
 
-	for {
-		<-limiter
+		logger.Infoln("Creating Secret")
+
+		err = sdkaction.Create(obj)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to create: Secret")
+		}
+
+		return sdkstatus.StatusFinished, nil
+	})
+
+	p.Add("Create Job", func() (sdkstatus.Status, error) {
+		logger.Infoln("Generating Job")
+
+		obj, err := generate.Job(cr.ObjectMeta.Namespace, name, image, cpu, memory, cr.Spec.Database, cr.Spec.Docker)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to generate: Job")
+		}
+
+		obj.ObjectMeta.OwnerReferences = ref
+
+		logger.Infoln("Creating Job")
+
+		err = sdkaction.Create(obj)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to create: Job")
+		}
+
+		return sdkstatus.StatusFinished, nil
+	})
+
+	p.Add("Wait for Job", func() (sdkstatus.Status, error) {
+		logger.Infoln("Checking Job status")
+
+		job := &batchv1.Job{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Job",
+				APIVersion: "batch/v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: cr.ObjectMeta.Namespace,
+				Name:      name,
+			},
+		}
 
 		err := sdkquery.Get(job)
 		if err != nil {
-			return errors.Wrap(err, "failed to load Job")
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to get: Job")
 		}
 
 		// Set status phase to failed if job containers are in failed state.
 		if job.Status.Failed > int32(0) {
-			return errors.Wrap(err, "job failed")
+			return sdkstatus.StatusFinished, errors.Wrap(err, "finished with failed status")
 		}
 
-		// Set status phase to successful if the job indicates as complete.
+		// Check if the job is finished, this will close the wait step.
 		if finished(job) {
-			break
+			logger.Infoln("Job finished")
+			return sdkstatus.StatusFinished, nil
 		}
-	}
 
-	return nil
+		logger.Infoln("Job still running")
+
+		return sdkstatus.StatusRunning, nil
+	})
+
+	result, err := p.Run(cr.Status.Steps)
+
+	logger.Infoln("Updating CustomResource status")
+
+	// Save the object back so we can pickup the pipeline from where we left off.
+	cr.Status.Steps = result
+	err = sdkaction.Update(cr)
+
+	logger.Infoln("Reconciliation loop finished")
+
+	return err
 }
 
 // Helper function to check if a job has finished.

@@ -2,8 +2,8 @@ package scheduled
 
 import (
 	"fmt"
-	"time"
 
+	sdkstatus "github.com/nickschuch/operator-sdk-status"
 	sdkaction "github.com/operator-framework/operator-sdk/pkg/sdk/action"
 	sdkhandler "github.com/operator-framework/operator-sdk/pkg/sdk/handler"
 	sdktypes "github.com/operator-framework/operator-sdk/pkg/sdk/types"
@@ -14,7 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	"github.com/previousnext/mysql-toolkit/internal/operator/apis/mtk/v1alpha1"
-	"github.com/previousnext/mysql-toolkit/internal/operator/handler/acquia/job"
+	"github.com/previousnext/mysql-toolkit/internal/operator/handler/acquia/generate"
 	"github.com/previousnext/mysql-toolkit/internal/operator/handler/acquia/secrets"
 )
 
@@ -47,11 +47,8 @@ type Handler struct {
 func (h *Handler) Handle(ctx sdktypes.Context, event sdktypes.Event) error {
 	switch cr := event.Object.(type) {
 	case *v1alpha1.AcquiaSnapshotScheduled:
-		logger := log.With("namespace", cr.ObjectMeta.Namespace).With("name", cr.ObjectMeta.Name)
-
-		err := reconcile(logger, h.Namespace, h.Secret, h.Image, h.CPU, h.Memory, cr)
+		err := reconcile(h.Namespace, h.Secret, h.Image, h.CPU, h.Memory, cr)
 		if err != nil {
-			logger.Errorln(err)
 			return err
 		}
 	}
@@ -60,47 +57,11 @@ func (h *Handler) Handle(ctx sdktypes.Context, event sdktypes.Event) error {
 }
 
 // Helper function to reconcile status updates and execution.
-func reconcile(logger log.Logger, namespace, secret, image, cpu, memory string, cr *v1alpha1.AcquiaSnapshotScheduled) error {
-	if cr.Status.Phase != "" {
-		return nil
-	}
+func reconcile(namespace, secret, image, cpu, memory string, cr *v1alpha1.AcquiaSnapshotScheduled) error {
+	var p sdkstatus.Pipeline
 
-	err := updateStatus(logger, cr, v1alpha1.PhaseRunning, "Loading Configuration")
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
-
-	compiledSecrets, err := secrets.Load(namespace, secret, cr.ObjectMeta.Namespace, cr.Spec.Credentials)
-	if err != nil {
-		return errors.Wrap(err, "failed to compile configuration")
-	}
-
-	err = updateStatus(logger, cr, v1alpha1.PhaseRunning, "Generating CronJob")
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
-
-	generateParams := job.Params{
-		Namespace: namespace,
-		Name:      fmt.Sprintf("%s-%s-%s", prefix, cr.ObjectMeta.Namespace, cr.ObjectMeta.Name),
-		Database:  cr.Spec.Database,
-		Docker:    cr.Spec.Docker,
-		Secrets:   compiledSecrets,
-		Config:    cr.Spec.Config,
-		Image:     image,
-		CPU:       cpu,
-		Memory:    memory,
-	}
-
-	genJob, genConfigmap, genSecret, err := job.Generate(generateParams)
-	if err != nil {
-		return errors.Wrap(err, "failed to generate Job")
-	}
-
-	err = updateStatus(logger, cr, v1alpha1.PhaseRunning, "Creating CronJob")
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
+	// Common identifier for all Job/ConfigMap/Secret objects within the operators namespace.
+	name := fmt.Sprintf("%s-%s-%s", prefix, cr.ObjectMeta.Namespace, cr.ObjectMeta.Name)
 
 	ref := []metav1.OwnerReference{
 		*metav1.NewControllerRef(cr, schema.GroupVersionKind{
@@ -110,83 +71,115 @@ func reconcile(logger log.Logger, namespace, secret, image, cpu, memory string, 
 		}),
 	}
 
-	genConfigmap.ObjectMeta.OwnerReferences = ref
-	genSecret.ObjectMeta.OwnerReferences = ref
+	logger := log.With("namespace", cr.ObjectMeta.Namespace).With("name", cr.ObjectMeta.Name)
 
-	var (
-		deadline  int64 = 800
-		successes int32 = 5
-		failures  int32 = 5
-	)
+	logger.Infoln("Starting reconciliation loop")
 
-	cronjob := &batchv1beta1.CronJob{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "CronJob",
-			APIVersion: "batch/v1beta1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: namespace,
-			Name:      fmt.Sprintf("%s-%s-%s", prefix, cr.ObjectMeta.Namespace, cr.ObjectMeta.Name),
-			OwnerReferences: []metav1.OwnerReference{
-				*metav1.NewControllerRef(cr, schema.GroupVersionKind{
-					Group:   v1alpha1.SchemeGroupVersion.Group,
-					Version: v1alpha1.SchemeGroupVersion.Version,
-					Kind:    cr.Kind,
-				}),
+	p.Add("Create ConfigMap", func() (sdkstatus.Status, error) {
+		logger.Infoln("Generating ConfigMap")
+
+		obj, err := generate.ConfigMap(namespace, name, cr.Spec.Config)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to generate: ConfigMap")
+		}
+
+		obj.ObjectMeta.OwnerReferences = ref
+
+		logger.Infoln("Creating ConfigMap")
+
+		err = sdkaction.Create(obj)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to create: ConfigMap")
+		}
+
+		return sdkstatus.StatusFinished, nil
+	})
+
+	p.Add("Create Secret", func() (sdkstatus.Status, error) {
+		logger.Infoln("Loading Secrets")
+
+		values, err := secrets.Load(namespace, secret, cr.ObjectMeta.Namespace, cr.Spec.Credentials)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to get values: Secret")
+		}
+
+		logger.Infoln("Generating Secret")
+
+		obj, err := generate.Secret(namespace, name, values)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to generate: Secret")
+		}
+
+		obj.ObjectMeta.OwnerReferences = ref
+
+		logger.Infoln("Creating Secret")
+
+		err = sdkaction.Create(obj)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to create: Secret")
+		}
+
+		return sdkstatus.StatusFinished, nil
+	})
+
+	p.Add("Create CronJob", func() (sdkstatus.Status, error) {
+		logger.Infoln("Generating CronJob")
+
+		obj, err := generate.Job(namespace, name, image, cpu, memory, cr.Spec.Database, cr.Spec.Docker)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to generate: Job")
+		}
+
+		var (
+			deadline  int64 = 800
+			successes int32 = 5
+			failures  int32 = 5
+		)
+
+		cronjob := &batchv1beta1.CronJob{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "CronJob",
+				APIVersion: "batch/v1beta1",
 			},
-		},
-		Spec: batchv1beta1.CronJobSpec{
-			Schedule:                   cr.Spec.Schedule,
-			StartingDeadlineSeconds:    &deadline,
-			ConcurrencyPolicy:          batchv1beta1.ForbidConcurrent,
-			SuccessfulJobsHistoryLimit: &successes,
-			FailedJobsHistoryLimit:     &failures,
-			JobTemplate: batchv1beta1.JobTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: namespace,
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace:       namespace,
+				Name:            name,
+				OwnerReferences: ref,
+			},
+			Spec: batchv1beta1.CronJobSpec{
+				Schedule:                   cr.Spec.Schedule,
+				StartingDeadlineSeconds:    &deadline,
+				ConcurrencyPolicy:          batchv1beta1.ForbidConcurrent,
+				SuccessfulJobsHistoryLimit: &successes,
+				FailedJobsHistoryLimit:     &failures,
+				JobTemplate: batchv1beta1.JobTemplateSpec{
+					ObjectMeta: metav1.ObjectMeta{
+						Namespace: namespace,
+					},
+					Spec: obj.Spec,
 				},
-				Spec: genJob.Spec,
 			},
-		},
-	}
+		}
 
-	err = updateStatus(logger, cr, v1alpha1.PhaseRunning, "Creating CronJob")
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
+		logger.Infoln("Creating CronJob")
 
-	err = sdkaction.Create(genConfigmap)
-	if err != nil {
-		return errors.Wrap(err, "failed to create ConfigMap")
-	}
+		err = sdkaction.Create(cronjob)
+		if err != nil {
+			return sdkstatus.StatusFailed, errors.Wrap(err, "failed to create: CronJob")
+		}
 
-	err = sdkaction.Create(genSecret)
-	if err != nil {
-		return errors.Wrap(err, "failed to create Secret")
-	}
+		return sdkstatus.StatusFinished, nil
+	})
 
-	err = sdkaction.Create(cronjob)
-	if err != nil {
-		return errors.Wrap(err, "failed to create CronJob")
-	}
+	result, err := p.Run(cr.Status.Steps)
 
-	err = updateStatus(logger, cr, v1alpha1.PhaseComplete, fmt.Sprintf("CronJob set to run: %s", cronjob.Spec.Schedule))
-	if err != nil {
-		return errors.Wrap(err, errUpdateStatus)
-	}
+	logger.Infoln("Updating CustomResource status")
 
-	return nil
-}
+	// Save the object back so we can pickup the pipeline from where we left off.
+	cr.Status.Steps = result
+	err = sdkaction.Update(cr)
 
-// Helper function to update the CustomResource status.
-func updateStatus(logger log.Logger, cr *v1alpha1.AcquiaSnapshotScheduled, status v1alpha1.Phase, message string) error {
-	logger.Info(status, message)
+	logger.Infoln("Reconciliation loop finished")
 
-	cr.Status = v1alpha1.AcquiaStatus{
-		Phase:   status,
-		Updated: time.Now(),
-		Message: message,
-	}
-
-	return sdkaction.Update(cr)
+	return err
 }
