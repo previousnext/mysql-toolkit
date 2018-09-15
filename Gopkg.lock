@@ -370,6 +370,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/nickschuch/operator-sdk-status"
+  packages = ["."]
+  revision = "77f214a936200d0cb8a4c19a9a0c11311062bd15"
+
+[[projects]]
+  branch = "master"
   name = "github.com/nwaples/rardecode"
   packages = ["."]
   revision = "e06696f847aeda6f39a8f0b7cdff193b7690aef6"
@@ -682,6 +688,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6e99af5d949aef0ad957f99209cfb6685a7faa8f303a27830e18c65bafe8d833"
+  inputs-digest = "e08a6877c78fee3cfded871bfe3d84dbbafc5310f1dbc8adee898a480488dc19"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -1,24 +1,10 @@
 package v1alpha1
 
-import "time"
-
-// Phase of the snapshot.
-type Phase string
-
-const (
-	// PhaseRunning for when the snapshot is running.
-	PhaseRunning Phase = "RUNNING"
-	// PhaseFailed for when the snapshot has failed.
-	PhaseFailed Phase = "FAILED"
-	// PhaseComplete for when the snapshot has completed.
-	PhaseComplete Phase = "COMPLETE"
-)
+import sdkstatus "github.com/nickschuch/operator-sdk-status"
 
 // AcquiaStatus to report on the Scheduleds status.
 type AcquiaStatus struct {
-	Phase   Phase     `json:"phase,omitempty"`
-	Updated time.Time `json:"updated,omitempty"`
-	Message string    `json:"message,omitempty"`
+	Steps []sdkstatus.StepStatus `json:"steps,omitempty"`
 }
 
 // AcquiaDatabase a developer wishes to snapshot.
