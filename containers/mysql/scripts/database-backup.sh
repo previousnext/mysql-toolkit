@@ -1,43 +1,48 @@
 #!/bin/bash
+set -euo pipefail
 
-# Name:        database-backup.sh
-# Description: Helper script for backing up a database.
-# Author:      Nick Schuch
+#/ Usage:       database-backup.sh > file.sql
+#/ Description: Dumps MySQL database as part of a backup process.
+#/ Options:
+#/   --help: Display this help message
+usage() { grep '^#/' "$0" | cut -c4- ; exit 0 ; }
+expr "$*" : ".*--help" > /dev/null && usage
 
-FILE=$1
+info()    { echo "[INFO]  $*" ; }
+fatal()   { echo "[FATAL] $*" ; exit 1 ; }
 
-if [ "$DATABASE_HOST" == "" ]; then
-  echo "Not found: DATABASE_HOST"
-  exit 1
+if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
+    if [ -z $DATABASE_HOST ]; then
+        fatal "Not found: DATABASE_HOST"
+    fi
+
+    if [ -z $DATABASE_PORT ]; then
+        fatal "Not found: DATABASE_PORT"
+    fi
+
+    if [ -z $DATABASE_USER ]; then
+        fatal "Not found: DATABASE_USER"
+    fi
+
+    if [ -z $DATABASE_PASSWORD ]; then
+        fatal "Not found: DATABASE_PASSWORD"
+    fi
+
+    if [ -z $DATABASE_NAME ]; then
+        fatal "Not found: DATABASE_NAME"
+    fi
+
+    if [ -z $FILE ]; then
+        fatal "Not found: FILE"
+    fi
+
+    info "Backup Started"
+
+    mysqldump --single-transaction \
+            --host=$DATABASE_HOST \
+            --port=$DATABASE_PORT \
+            --user=$DATABASE_USER \
+            --password=$DATABASE_PASSWORD $DATABASE_NAME
+
+    info "Backup Complete"
 fi
-
-if [ "$DATABASE_PORT" == "" ]; then
-  echo "Not found: DATABASE_PORT"
-  exit 1
-fi
-
-if [ "$DATABASE_USER" == "" ]; then
-  echo "Not found: DATABASE_USER"
-  exit 1
-fi
-
-if [ "$DATABASE_PASSWORD" == "" ]; then
-  echo "Not found: DATABASE_PASSWORD"
-  exit 1
-fi
-
-if [ "$DATABASE_NAME" == "" ]; then
-  echo "Not found: DATABASE_NAME"
-  exit 1
-fi
-
-if [ "$FILE" == "" ]; then
-  echo "Not found: FILE"
-  exit 1
-fi
-
-mysqldump --single-transaction \
-          --host=$DATABASE_HOST \
-          --port=$DATABASE_PORT \
-          --user=$DATABASE_USER \
-          --password=$DATABASE_PASSWORD $DATABASE_NAME > $FILE
