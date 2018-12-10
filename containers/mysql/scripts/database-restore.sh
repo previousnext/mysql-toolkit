@@ -39,7 +39,7 @@ fi
 # Connection string which will be used to perform operations on the MySQL database.
 CONNECTION_STRING="mysql --host=$DATABASE_HOST --port=$DATABASE_PORT --user=$DATABASE_USER --password=$DATABASE_PASSWORD $DATABASE_NAME"
 
-TABLES=$($CONNECTION_STRING -e 'show tables' | $AWK '{ print $1}' | $GREP -v '^Tables' )
+TABLES=$($CONNECTION_STRING -e 'show tables' | awk '{ print $1}' | grep -v '^Tables' )
 
 if [ "$TABLES" == "" ]
 then
