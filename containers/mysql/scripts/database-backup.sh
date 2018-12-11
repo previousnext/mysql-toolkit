@@ -11,6 +11,8 @@ expr "$*" : ".*--help" > /dev/null && usage
 info()    { echo "[INFO]  $*" ; }
 fatal()   { echo "[FATAL] $*" ; exit 1 ; }
 
+FILE=$1
+
 if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
     if [ -z $DATABASE_HOST ]; then
         fatal "Not found: DATABASE_HOST"
@@ -42,7 +44,7 @@ if [[ "${BASH_SOURCE[0]}" = "$0" ]]; then
             --host=$DATABASE_HOST \
             --port=$DATABASE_PORT \
             --user=$DATABASE_USER \
-            --password=$DATABASE_PASSWORD $DATABASE_NAME
+            --password=$DATABASE_PASSWORD $DATABASE_NAME > $FILE
 
     info "Backup Complete"
 fi
