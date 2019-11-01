@@ -6,7 +6,7 @@ func (c Client) Latest() (Backup, error) {
 
 	list, err := c.List()
 	if err != nil {
-		return backup, nil
+		return backup, err
 	}
 
 	return findLatest(list), nil
