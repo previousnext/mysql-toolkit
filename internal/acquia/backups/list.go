@@ -25,7 +25,7 @@ func (c Client) List() ([]Backup, error) {
 	if err != nil {
 		return backups, errors.Wrap(err, "failed to list backups")
 	}
-	if resp.StatusCode <= 200 || resp.StatusCode >= 299 {
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return backups, fmt.Errorf("failed to list backups with response code '%s'", resp.Status)
 	}
 
