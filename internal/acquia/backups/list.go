@@ -23,7 +23,10 @@ func (c Client) List() ([]Backup, error) {
 	cli := &http.Client{}
 	resp, err := cli.Do(req)
 	if err != nil {
-		return backups, errors.Wrap(err, "failed to ")
+		return backups, errors.Wrap(err, "failed to list backups")
+	}
+	if resp.StatusCode <= 200 || resp.StatusCode >= 299 {
+		return backups, fmt.Errorf("failed to list backups with response code '%s'", resp.Status)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
