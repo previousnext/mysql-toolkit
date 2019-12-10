@@ -1,6 +1,8 @@
 MySQL Toolkit
 =============
 
+## Development is being decoupled and moved over to https://github.com/skpr/mtk
+
 [![CircleCI](https://circleci.com/gh/previousnext/mysql-toolkit.svg?style=svg)](https://circleci.com/gh/previousnext/mysql-toolkit)
 
 **Maintainer**: Nick Schuch
